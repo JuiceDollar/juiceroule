@@ -162,9 +162,26 @@ library BetTypes {
             uint8 num1 = uint8(betData >> 8);
             uint8 num2 = uint8(betData & 0xFF);
             if (num1 > 36 || num2 > 36 || num1 >= num2) return false;
-            // Check adjacency (horizontal or vertical)
-            int8 diff = int8(num2) - int8(num1);
-            return diff == 1 || diff == 3;
+
+            // Special case: splits involving zero (0-1, 0-2, 0-3)
+            if (num1 == 0) {
+                return num2 <= 3;
+            }
+
+            // Check adjacency on the roulette table layout:
+            // Layout: Streets are vertical (1,2,3), (4,5,6), (7,8,9), ...
+            //         Columns are horizontal: Col0(1,4,7...), Col1(2,5,8...), Col2(3,6,9...)
+            uint8 diff = num2 - num1;
+
+            // Horizontal adjacency (same street, next column): diff == 3
+            if (diff == 3) return true;
+
+            // Vertical adjacency (same column, adjacent in street): diff == 1
+            // BUT only valid if num1 is NOT at the top of a street (num1 % 3 != 0)
+            // e.g., 1-2 valid, 2-3 valid, but 3-4 INVALID (different streets)
+            if (diff == 1) return num1 % 3 != 0;
+
+            return false;
         }
 
         if (betType == BetType.STREET) {
