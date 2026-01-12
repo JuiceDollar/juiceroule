@@ -108,7 +108,7 @@ contract JuiceRouleTest is Test {
         roulette.revealAndSettle(secret);
 
         // Check bet is settled
-        (,,,,,bool settled,,) = roulette.getBetStatus(player);
+        (,,,,, bool settled,,) = roulette.getBetStatus(player);
         assertTrue(settled);
     }
 
@@ -177,7 +177,7 @@ contract JuiceRouleTest is Test {
         roulette.forceSettle(player);
 
         // Check bet is settled
-        (,,,,,bool settled,,) = roulette.getBetStatus(player);
+        (,,,,, bool settled,,) = roulette.getBetStatus(player);
         assertTrue(settled);
     }
 
@@ -316,12 +316,17 @@ contract JuiceRouleTest is Test {
                               FUZZ TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testFuzz_BetTypes_ResultInRange(uint256 random) public pure {
+    function testFuzz_BetTypes_ResultInRange(
+        uint256 random
+    ) public pure {
         uint8 result = uint8(random % 37);
         assertTrue(result <= 36);
     }
 
-    function testFuzz_BetTypes_StraightUpOnlyOneWinner(uint8 result, uint8 betNumber) public pure {
+    function testFuzz_BetTypes_StraightUpOnlyOneWinner(
+        uint8 result,
+        uint8 betNumber
+    ) public pure {
         vm.assume(result <= 36);
         vm.assume(betNumber <= 36);
 

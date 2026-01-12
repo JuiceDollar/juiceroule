@@ -24,30 +24,16 @@ library BetTypes {
 
     /// @notice Red numbers on a European roulette wheel
     /// @dev Stored as a bitmap for gas efficiency: bit N is set if N is red
-    uint256 internal constant RED_NUMBERS =
-        (1 << 1) |
-        (1 << 3) |
-        (1 << 5) |
-        (1 << 7) |
-        (1 << 9) |
-        (1 << 12) |
-        (1 << 14) |
-        (1 << 16) |
-        (1 << 18) |
-        (1 << 19) |
-        (1 << 21) |
-        (1 << 23) |
-        (1 << 25) |
-        (1 << 27) |
-        (1 << 30) |
-        (1 << 32) |
-        (1 << 34) |
-        (1 << 36);
+    uint256 internal constant RED_NUMBERS = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 12) | (1 << 14)
+        | (1 << 16) | (1 << 18) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25) | (1 << 27) | (1 << 30) | (1 << 32)
+        | (1 << 34) | (1 << 36);
 
     /// @notice Get the payout multiplier for a bet type
     /// @param betType The type of bet
     /// @return multiplier The payout multiplier (e.g., 35 for 35:1)
-    function getPayout(BetType betType) internal pure returns (uint256 multiplier) {
+    function getPayout(
+        BetType betType
+    ) internal pure returns (uint256 multiplier) {
         if (betType == BetType.STRAIGHT_UP) return 35;
         if (betType == BetType.SPLIT) return 17;
         if (betType == BetType.STREET) return 11;
@@ -63,7 +49,11 @@ library BetTypes {
     /// @param betType The type of bet placed
     /// @param betData Additional data for the bet (number, column index, etc.)
     /// @return isWinner True if the bet wins
-    function checkWin(uint8 result, BetType betType, uint256 betData) internal pure returns (bool isWinner) {
+    function checkWin(
+        uint8 result,
+        BetType betType,
+        uint256 betData
+    ) internal pure returns (bool isWinner) {
         // Zero never wins on outside bets
         if (result == 0) {
             // Only STRAIGHT_UP on 0 can win
@@ -153,7 +143,10 @@ library BetTypes {
     /// @param betType The type of bet
     /// @param betData The bet data to validate
     /// @return isValid True if the bet data is valid
-    function validateBetData(BetType betType, uint256 betData) internal pure returns (bool isValid) {
+    function validateBetData(
+        BetType betType,
+        uint256 betData
+    ) internal pure returns (bool isValid) {
         if (betType == BetType.STRAIGHT_UP) {
             return betData <= 36;
         }
@@ -162,9 +155,26 @@ library BetTypes {
             uint8 num1 = uint8(betData >> 8);
             uint8 num2 = uint8(betData & 0xFF);
             if (num1 > 36 || num2 > 36 || num1 >= num2) return false;
-            // Check adjacency (horizontal or vertical)
-            int8 diff = int8(num2) - int8(num1);
-            return diff == 1 || diff == 3;
+
+            // Special case: splits involving zero (0-1, 0-2, 0-3)
+            if (num1 == 0) {
+                return num2 <= 3;
+            }
+
+            // Check adjacency on the roulette table layout:
+            // Layout: Streets are vertical (1,2,3), (4,5,6), (7,8,9), ...
+            //         Columns are horizontal: Col0(1,4,7...), Col1(2,5,8...), Col2(3,6,9...)
+            uint8 diff = num2 - num1;
+
+            // Horizontal adjacency (same street, next column): diff == 3
+            if (diff == 3) return true;
+
+            // Vertical adjacency (same column, adjacent in street): diff == 1
+            // BUT only valid if num1 is NOT at the top of a street (num1 % 3 != 0)
+            // e.g., 1-2 valid, 2-3 valid, but 3-4 INVALID (different streets)
+            if (diff == 1) return num1 % 3 != 0;
+
+            return false;
         }
 
         if (betType == BetType.STREET) {

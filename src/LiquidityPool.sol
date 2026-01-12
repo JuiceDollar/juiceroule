@@ -43,7 +43,9 @@ contract LiquidityPool is ERC20, ReentrancyGuard {
 
     /// @notice Constructor
     /// @param _roulette Address of the JuiceRoule contract
-    constructor(address _roulette) ERC20("JuiceRoule LP", "jrLP") {
+    constructor(
+        address _roulette
+    ) ERC20("JuiceRoule LP", "jrLP") {
         roulette = _roulette;
     }
 
@@ -63,7 +65,9 @@ contract LiquidityPool is ERC20, ReentrancyGuard {
     /// @notice Withdraw ETH by burning LP shares
     /// @param shares The amount of shares to burn
     /// @return assets The amount of ETH returned
-    function withdraw(uint256 shares) external nonReentrant returns (uint256 assets) {
+    function withdraw(
+        uint256 shares
+    ) external nonReentrant returns (uint256 assets) {
         if (shares == 0) revert ZeroShares();
 
         assets = _convertToAssets(shares);
@@ -83,7 +87,9 @@ contract LiquidityPool is ERC20, ReentrancyGuard {
 
     /// @notice Lock funds for a pending bet (called by roulette contract)
     /// @param potentialPayout The maximum payout if the bet wins
-    function lockFunds(uint256 potentialPayout) external onlyRoulette {
+    function lockFunds(
+        uint256 potentialPayout
+    ) external onlyRoulette {
         uint256 _available = address(this).balance - lockedInBets;
         if (potentialPayout > _available) revert InsufficientLiquidity();
 
@@ -93,7 +99,9 @@ contract LiquidityPool is ERC20, ReentrancyGuard {
 
     /// @notice Unlock funds when a bet is settled (win or lose)
     /// @param lockedAmount The amount that was locked
-    function unlockFunds(uint256 lockedAmount) external onlyRoulette {
+    function unlockFunds(
+        uint256 lockedAmount
+    ) external onlyRoulette {
         lockedInBets -= lockedAmount;
         emit FundsUnlocked(lockedAmount);
     }
@@ -101,7 +109,10 @@ contract LiquidityPool is ERC20, ReentrancyGuard {
     /// @notice Send payout to winner (called by roulette contract)
     /// @param winner Address of the winner
     /// @param amount Amount to send
-    function sendPayout(address winner, uint256 amount) external onlyRoulette nonReentrant {
+    function sendPayout(
+        address winner,
+        uint256 amount
+    ) external onlyRoulette nonReentrant {
         (bool success,) = winner.call{value: amount}("");
         if (!success) revert TransferFailed();
 
@@ -135,19 +146,25 @@ contract LiquidityPool is ERC20, ReentrancyGuard {
     /// @notice Convert ETH amount to shares
     /// @param assets The ETH amount
     /// @return shares The equivalent shares
-    function convertToShares(uint256 assets) external view returns (uint256 shares) {
+    function convertToShares(
+        uint256 assets
+    ) external view returns (uint256 shares) {
         shares = _convertToShares(assets);
     }
 
     /// @notice Convert shares to ETH amount
     /// @param shares The share amount
     /// @return assets The equivalent ETH
-    function convertToAssets(uint256 shares) external view returns (uint256 assets) {
+    function convertToAssets(
+        uint256 shares
+    ) external view returns (uint256 assets) {
         assets = _convertToAssets(shares);
     }
 
     /// @dev Internal share calculation
-    function _convertToShares(uint256 assets) internal view returns (uint256 shares) {
+    function _convertToShares(
+        uint256 assets
+    ) internal view returns (uint256 shares) {
         uint256 supply = totalSupply();
         if (supply == 0) {
             // First deposit: 1:1 ratio
@@ -166,7 +183,9 @@ contract LiquidityPool is ERC20, ReentrancyGuard {
     }
 
     /// @dev Internal asset calculation
-    function _convertToAssets(uint256 shares) internal view returns (uint256 assets) {
+    function _convertToAssets(
+        uint256 shares
+    ) internal view returns (uint256 assets) {
         uint256 supply = totalSupply();
         if (supply == 0) {
             assets = 0;
