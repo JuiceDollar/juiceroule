@@ -24,30 +24,16 @@ library BetTypes {
 
     /// @notice Red numbers on a European roulette wheel
     /// @dev Stored as a bitmap for gas efficiency: bit N is set if N is red
-    uint256 internal constant RED_NUMBERS =
-        (1 << 1) |
-        (1 << 3) |
-        (1 << 5) |
-        (1 << 7) |
-        (1 << 9) |
-        (1 << 12) |
-        (1 << 14) |
-        (1 << 16) |
-        (1 << 18) |
-        (1 << 19) |
-        (1 << 21) |
-        (1 << 23) |
-        (1 << 25) |
-        (1 << 27) |
-        (1 << 30) |
-        (1 << 32) |
-        (1 << 34) |
-        (1 << 36);
+    uint256 internal constant RED_NUMBERS = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 12) | (1 << 14)
+        | (1 << 16) | (1 << 18) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25) | (1 << 27) | (1 << 30) | (1 << 32)
+        | (1 << 34) | (1 << 36);
 
     /// @notice Get the payout multiplier for a bet type
     /// @param betType The type of bet
     /// @return multiplier The payout multiplier (e.g., 35 for 35:1)
-    function getPayout(BetType betType) internal pure returns (uint256 multiplier) {
+    function getPayout(
+        BetType betType
+    ) internal pure returns (uint256 multiplier) {
         if (betType == BetType.STRAIGHT_UP) return 35;
         if (betType == BetType.SPLIT) return 17;
         if (betType == BetType.STREET) return 11;
@@ -63,7 +49,11 @@ library BetTypes {
     /// @param betType The type of bet placed
     /// @param betData Additional data for the bet (number, column index, etc.)
     /// @return isWinner True if the bet wins
-    function checkWin(uint8 result, BetType betType, uint256 betData) internal pure returns (bool isWinner) {
+    function checkWin(
+        uint8 result,
+        BetType betType,
+        uint256 betData
+    ) internal pure returns (bool isWinner) {
         // Zero never wins on outside bets
         if (result == 0) {
             // Only STRAIGHT_UP on 0 can win
@@ -153,7 +143,10 @@ library BetTypes {
     /// @param betType The type of bet
     /// @param betData The bet data to validate
     /// @return isValid True if the bet data is valid
-    function validateBetData(BetType betType, uint256 betData) internal pure returns (bool isValid) {
+    function validateBetData(
+        BetType betType,
+        uint256 betData
+    ) internal pure returns (bool isValid) {
         if (betType == BetType.STRAIGHT_UP) {
             return betData <= 36;
         }

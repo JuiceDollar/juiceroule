@@ -99,7 +99,11 @@ contract JuiceRoule is ReentrancyGuard {
     /// @param commitment The keccak256 hash of the player's secret
     /// @param betType The type of bet to place
     /// @param betData Additional data for the bet (depends on bet type)
-    function placeBet(bytes32 commitment, BetTypes.BetType betType, uint256 betData) external payable nonReentrant {
+    function placeBet(
+        bytes32 commitment,
+        BetTypes.BetType betType,
+        uint256 betData
+    ) external payable nonReentrant {
         // Validate no pending bet
         if (bets[msg.sender].commitment != bytes32(0) && !bets[msg.sender].settled) {
             revert BetAlreadyPending();
@@ -141,7 +145,9 @@ contract JuiceRoule is ReentrancyGuard {
 
     /// @notice Reveal secret and settle bet
     /// @param secret The original secret that was hashed for the commitment
-    function revealAndSettle(bytes32 secret) external nonReentrant {
+    function revealAndSettle(
+        bytes32 secret
+    ) external nonReentrant {
         Bet storage bet = bets[msg.sender];
 
         // Validate bet exists and not settled
@@ -189,7 +195,9 @@ contract JuiceRoule is ReentrancyGuard {
 
     /// @notice Force settle an expired bet (player loses)
     /// @param player Address of the player with expired bet
-    function forceSettle(address player) external nonReentrant {
+    function forceSettle(
+        address player
+    ) external nonReentrant {
         Bet storage bet = bets[player];
 
         // Validate bet exists and not settled
@@ -225,7 +233,9 @@ contract JuiceRoule is ReentrancyGuard {
     /// @return settled Whether bet is settled
     /// @return canReveal Whether bet can be revealed now
     /// @return isExpired Whether bet has expired
-    function getBetStatus(address player)
+    function getBetStatus(
+        address player
+    )
         external
         view
         returns (
@@ -248,8 +258,7 @@ contract JuiceRoule is ReentrancyGuard {
         settled = bet.settled;
 
         if (commitment != bytes32(0) && !settled) {
-            canReveal =
-                block.number >= commitBlock + MIN_REVEAL_DELAY && block.number <= commitBlock + MAX_REVEAL_DELAY;
+            canReveal = block.number >= commitBlock + MIN_REVEAL_DELAY && block.number <= commitBlock + MAX_REVEAL_DELAY;
             isExpired = block.number > commitBlock + MAX_REVEAL_DELAY;
         }
     }
@@ -257,14 +266,18 @@ contract JuiceRoule is ReentrancyGuard {
     /// @notice Calculate commitment hash for a secret (helper for frontend)
     /// @param secret The secret to hash
     /// @return commitment The keccak256 hash
-    function calculateCommitment(bytes32 secret) external pure returns (bytes32 commitment) {
+    function calculateCommitment(
+        bytes32 secret
+    ) external pure returns (bytes32 commitment) {
         commitment = keccak256(abi.encodePacked(secret));
     }
 
     /// @notice Get payout multiplier for a bet type
     /// @param betType The bet type
     /// @return multiplier The payout multiplier (e.g., 35 for 35:1)
-    function getPayoutMultiplier(BetTypes.BetType betType) external pure returns (uint256 multiplier) {
+    function getPayoutMultiplier(
+        BetTypes.BetType betType
+    ) external pure returns (uint256 multiplier) {
         multiplier = BetTypes.getPayout(betType);
     }
 
@@ -273,11 +286,11 @@ contract JuiceRoule is ReentrancyGuard {
     /// @param betType The bet type
     /// @param betData The bet data
     /// @return won Whether the bet would win
-    function checkWinCondition(uint8 result, BetTypes.BetType betType, uint256 betData)
-        external
-        pure
-        returns (bool won)
-    {
+    function checkWinCondition(
+        uint8 result,
+        BetTypes.BetType betType,
+        uint256 betData
+    ) external pure returns (bool won) {
         won = BetTypes.checkWin(result, betType, betData);
     }
 }
